@@ -105,7 +105,7 @@ function ProjectDialog({ selection, onClose }: { selection: Selection; onClose: 
 export default function App() {
   const [query, setQuery] = useState('');
   const [selection, setSelection] = useState<Selection | null>(null);
-  const [activeCategory, setActiveCategory] = useState<CategoryId | 'all'>('all');
+  const [activeCategory, setActiveCategory] = useState<CategoryId | 'all' | null>(null);
   const filtered = teams.filter(team =>
     (activeCategory === 'all' || team.category === activeCategory) &&
     (team.name + team.title + team.description).includes(query.trim())
@@ -159,7 +159,7 @@ export default function App() {
       <section className="category-section" aria-labelledby="category-heading">
         <div className="category-heading">
           <div><div className="eyebrow">EXPLORE BY FIELD</div><h2 id="category-heading">분야별 전시</h2></div>
-          <button className="show-all" aria-pressed={activeCategory === 'all'} onClick={() => setActiveCategory('all')}>전체 작품 보기 · {teams.length}</button>
+          <button className="show-all" aria-pressed={activeCategory === 'all'} aria-controls="projects" onClick={() => setActiveCategory('all')}>전부 보기 · {teams.length}</button>
         </div>
         <div className="category-grid">
           {categories.map((category, index) => <button
@@ -175,10 +175,10 @@ export default function App() {
         </div>
         <p className="category-hint">분야 카드를 누르면 아래에 해당 작품이 표시됩니다. 현재 조별 분류는 예시입니다.</p>
       </section>
-      <section id="projects" aria-labelledby="projects-heading">
+      {activeCategory !== null ? <section id="projects" aria-labelledby="projects-heading">
         <div className="toolbar">
           <h2 id="projects-heading" aria-live="polite">
-            {selectedCategory?.name ?? '전체 조별 작품'}
+            {selectedCategory?.name ?? '전부 보기'}
             <span>
               {filtered.length}개 작품
             </span>
@@ -195,7 +195,7 @@ export default function App() {
             {query.trim() ? '이 분야에 검색 조건과 일치하는 작품이 없습니다.' : '이 분야에 등록된 작품이 없습니다.'}
           </div>}
         </div>
-      </section>
+      </section> : <div id="projects" className="empty">위에서 분야를 선택하거나 ‘전부 보기’를 눌러 주세요.</div>}
       <footer>
         <span>
           우리의 전시회 · 함께 만든 아이디어를 공유하는 공간
