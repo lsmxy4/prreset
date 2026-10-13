@@ -8,9 +8,9 @@ import type { CategoryId } from './categories';
 type Action = 'ppt' | 'link';
 type Selection = { team: Team; action: Action };
 
-function TeamCard({ team, onOpen }: { team: Team; onOpen: (team: Team, action: Action) => void }) {
+function TeamCard({ team, index, onOpen }: { team: Team; index: number; onOpen: (team: Team, action: Action) => void }) {
   const colors = { '--bg': team.bg, '--ink': team.ink } as CSSProperties;
-  return <article className="card">
+  return <article className="card" style={{ '--enter-delay': `${Math.min(index, 8) * 65}ms` } as CSSProperties}>
     <div className="visual" style={colors}>
       <span className="number">
         {team.name} PROJECT
@@ -69,7 +69,7 @@ function ProjectDialog({ selection, onClose }: { selection: Selection; onClose: 
       <button className="close" aria-label="닫기" onClick={onClose}>✕</button>
     </div>
     {action === 'ppt' ? <>
-      <div className="slide">
+      <div className="slide" key={page}>
         <div className="eyebrow">
           {team.name} · 예시 설명 자료
         </div>
@@ -189,8 +189,8 @@ export default function App() {
             onChange={event => setQuery(event.target.value)}
             placeholder="조 이름 또는 작품 검색" aria-label="조 이름 또는 작품 검색" />
         </div>
-        <div className="grid">
-          {filtered.map(team => <TeamCard key={team.name} team={team} onOpen={open} />)}
+        <div className="grid" key={activeCategory}>
+          {filtered.map((team, index) => <TeamCard key={team.name} team={team} index={index} onOpen={open} />)}
           {filtered.length === 0 && <div className="empty">
             {query.trim() ? '이 분야에 검색 조건과 일치하는 작품이 없습니다.' : '이 분야에 등록된 작품이 없습니다.'}
           </div>}

@@ -364,5 +364,40 @@ button:disabled {
 .category-info p { font-size: 11px; line-height: 1.7; font-weight: 400; min-height: 57px; margin: 12px 0; }
 .category-count { display: flex; justify-content: space-between; font-size: 11px; color: #3c634b; }
 .category-hint { font-size: 11px; margin: 14px 0 0; }
+
+/* 카드와 버튼의 짧은 피드백 */
+.category-card {
+    transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease, background-color 220ms ease;
+}
+.category-card.selected { background-color: #f0f5ec; }
+.category-art > span { transition: transform 260ms ease; }
+button { transition: background-color 200ms ease, color 200ms ease, filter 200ms ease, transform 160ms ease; }
+button:not(:disabled):active { transform: scale(.98); }
+@media (hover: hover) {
+    .category-card:hover, .category-card:focus-visible {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 24px #28594420;
+    }
+    .category-card:hover .category-art > span { transform: rotate(-6deg) scale(1.08); }
+}
+.card { animation: card-enter 420ms cubic-bezier(.2,.75,.3,1) var(--enter-delay, 0ms) backwards; }
+dialog[open] { animation: dialog-enter 240ms cubic-bezier(.2,.75,.3,1) both; }
+dialog[open]::backdrop { animation: backdrop-enter 240ms ease both; }
+.slide { animation: slide-enter 220ms ease both; }
+@keyframes card-enter {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+@keyframes dialog-enter {
+    from { opacity: 0; transform: translateY(10px) scale(.96); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes backdrop-enter { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slide-enter { from { opacity: 0; transform: translateX(8px); } to { opacity: 1; transform: translateX(0); } }
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+    .category-card:hover, .category-card:focus-visible, .category-card:hover .category-art > span,
+    button:not(:disabled):active { transform: none; }
+}
 @media(max-width:1000px) { .category-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media(max-width:580px) { .category-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .category-heading { align-items: center; } .show-all { font-size: 11px; } .category-info p { min-height: 57px; } }
