@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { teams } from './teams';
 import type { Team } from './teams';
+import { categories } from './categories';
+import type { CategoryId } from './categories';
 
 type Action = 'ppt' | 'link';
 type Selection = { team: Team; action: Action };
@@ -19,7 +21,7 @@ function TeamCard({ team, onOpen }: { team: Team; onOpen: (team: Team, action: A
     </div>
     <div className="body">
       <div className="category">
-        {team.category}
+        {categories.find(category => category.id === team.category)?.name}
       </div>
       <h3>
         {team.title}
@@ -103,7 +105,12 @@ function ProjectDialog({ selection, onClose }: { selection: Selection; onClose: 
 export default function App() {
   const [query, setQuery] = useState('');
   const [selection, setSelection] = useState<Selection | null>(null);
-  const filtered = teams.filter(team => (team.name + team.title + team.description).includes(query.trim()));
+  const [activeCategory, setActiveCategory] = useState<CategoryId | 'all'>('all');
+  const filtered = teams.filter(team =>
+    (activeCategory === 'all' || team.category === activeCategory) &&
+    (team.name + team.title + team.description).includes(query.trim())
+  );
+  const selectedCategory = categories.find(category => category.id === activeCategory);
   function open(team: Team, action: Action) {
     const address = action === 'ppt' ? team.pptUrl : team.projectUrl;
     if (address) {
@@ -144,15 +151,34 @@ export default function App() {
         <div className="note">
           👋 전시회 관람 안내
           <br />
-          관심 있는 작품의 버튼을 눌러
+          먼저 관심 있는 분야를 선택하고
           <br />
-          설명 자료와 관련 링크를 확인하세요.
+          작품의 설명 자료와 링크를 확인하세요.
         </div>
       </section>
-      <section>
+      <section className="category-section" aria-labelledby="category-heading">
+        <div className="category-heading">
+          <div><div className="eyebrow">EXPLORE BY FIELD</div><h2 id="category-heading">분야별 전시</h2></div>
+          <button className="show-all" aria-pressed={activeCategory === 'all'} onClick={() => setActiveCategory('all')}>전체 작품 보기 · {teams.length}</button>
+        </div>
+        <div className="category-grid">
+          {categories.map((category, index) => <button
+            key={category.id}
+            className={`category-card${activeCategory === category.id ? ' selected' : ''}`}
+            aria-pressed={activeCategory === category.id}
+            aria-controls="projects"
+            onClick={() => setActiveCategory(category.id)}
+          >
+            <div className="category-art" style={{ background: category.color }} aria-hidden="true"><span>{category.symbol}</span><small>0{index + 1}</small></div>
+            <div className="category-info"><strong>{category.name}</strong><span className="category-english">{category.english}</span><p>{category.description}</p><span className="category-count">{teams.filter(team => team.category === category.id).length}개 작품 <span aria-hidden="true">↗</span></span></div>
+          </button>)}
+        </div>
+        <p className="category-hint">분야 카드를 누르면 아래에 해당 작품이 표시됩니다. 현재 조별 분류는 예시입니다.</p>
+      </section>
+      <section id="projects" aria-labelledby="projects-heading">
         <div className="toolbar">
-          <h2>
-            조별 작품
+          <h2 id="projects-heading" aria-live="polite">
+            {selectedCategory?.name ?? '전체 조별 작품'}
             <span>
               {filtered.length}개 작품
             </span>
@@ -166,7 +192,7 @@ export default function App() {
         <div className="grid">
           {filtered.map(team => <TeamCard key={team.name} team={team} onOpen={open} />)}
           {filtered.length === 0 && <div className="empty">
-            검색한 작품이 없습니다.
+            {query.trim() ? '이 분야에 검색 조건과 일치하는 작품이 없습니다.' : '이 분야에 등록된 작품이 없습니다.'}
           </div>}
         </div>
       </section>
