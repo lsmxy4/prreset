@@ -51,7 +51,7 @@ export default function App() {
         <span>
           ▦
         </span>
-        경복대학교 소프트웨어융합과 캡스톤 디자인 전시회
+        경복대학교 소프트웨어융합과 캡스톤 디자인 전시회(26학년도)
       </div>
       <div className="tag">
         TEAM PROJECT EXHIBITION <span className="header-badge">온라인 전시관</span>
@@ -64,7 +64,7 @@ export default function App() {
             IDEAS COME TOGETHER
           </div>
           <h1>
-            우리의 작품,<br /><em>한자리에.</em>
+            소프트웨어융합과 <br/>캡스톤 디자인 전시회
           </h1>
           <p>
             각 조의 아이디어와 결과물을 만나보세요.<br />
