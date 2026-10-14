@@ -43,6 +43,8 @@ h1 em { font-style: normal; color: var(--forest); }
 .toolbar h2 { font-size: 23px; letter-spacing: -.8px; }
 .toolbar h2 span { display: inline-block; background: #e9eee2; border-radius: 20px; padding: 5px 9px; font-size: 11px; vertical-align: middle; }
 .collection-description { font-size: 12px; margin: 0 0 26px; color: var(--muted); }
+#projects { scroll-margin-top: 24px; margin-bottom: 36px; }
+#projects:focus { outline: none; }
 .search-field { display: flex; align-items: center; background: white; border: 1px solid #dce1d6; border-radius: 10px; padding-left: 12px; flex-shrink: 0; }
 .search-field:focus-within { outline: 2px solid var(--forest); outline-offset: 2px; }
 .search-field > span { font-size: 22px; color: #7a8b70; }

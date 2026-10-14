@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { teams } from './teams';
 import type { Team } from './teams';
 import { categories } from './categories';
@@ -17,6 +17,15 @@ export default function App() {
     (team.name + team.title + team.description).normalize('NFKC').toLocaleLowerCase('ko').includes(normalizedQuery)
   );
   const selectedCategory = categories.find(category => category.id === activeCategory);
+  useEffect(() => {
+    if (activeCategory === null) return;
+    const frame = requestAnimationFrame(() => {
+      const section = document.getElementById('projects');
+      section?.focus({ preventScroll: true });
+      section?.scrollIntoView({ block: 'start', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [activeCategory]);
   function selectCategory(category: CategoryId | 'all' | null) {
     setActiveCategory(category);
     setQuery('');
@@ -68,26 +77,7 @@ export default function App() {
           <ol><li><span>01</span>관심 있는 전시 분야 선택</li><li><span>02</span>조별 아이디어와 작품 살펴보기</li><li><span>03</span>PPT 자료와 관련 링크 열기</li></ol>
         </div>
       </section>
-      <section className="category-section" aria-labelledby="category-heading">
-        <div className="category-heading">
-          <div><div className="eyebrow">EXPLORE BY FIELD</div><h2 id="category-heading">분야별 전시</h2></div>
-          <button className="show-all" aria-pressed={activeCategory === 'all'} aria-controls="projects" onClick={() => selectCategory('all')}>전부 보기 · {teams.length} ↗</button>
-        </div>
-        <div className="category-grid">
-          {categories.map((category, index) => <button
-            key={category.id}
-            className={`category-card${activeCategory === category.id ? ' selected' : ''}`}
-            aria-pressed={activeCategory === category.id}
-            aria-controls="projects"
-            onClick={() => selectCategory(category.id)}
-          >
-            <div className="category-art" style={{ background: category.color }} aria-hidden="true"><span>{category.symbol}</span><small>FIELD 0{index + 1}</small><span className="selected-mark">✓</span></div>
-            <div className="category-info"><strong>{category.name}</strong><span className="category-english">{category.english}</span><p>{category.description}</p><span className="category-count">{teams.filter(team => team.category === category.id).length}개 작품 <span aria-hidden="true">↗</span></span></div>
-          </button>)}
-        </div>
-        <p className="category-hint">분야 카드를 누르면 아래에 해당 작품이 표시됩니다. 현재 조별 분류는 예시입니다.</p>
-      </section>
-      {activeCategory !== null ? <section id="projects" aria-labelledby="projects-heading">
+      {activeCategory !== null ? <section id="projects" aria-labelledby="projects-heading" tabIndex={-1}>
         <div className="collection-top"><button className="text-button" onClick={() => selectCategory(null)}>← 분야 선택으로</button><span>EXHIBITION COLLECTION</span></div>
         <div className="toolbar">
           <h2 id="projects-heading" aria-live="polite">
@@ -110,7 +100,26 @@ export default function App() {
             <span className="empty-icon" aria-hidden="true">⌕</span><strong>{query.trim() ? '검색 결과가 없어요.' : '아직 등록된 작품이 없어요.'}</strong><p>다른 조 이름이나 작품 이름으로 검색해 보세요.</p>{query && <button className="show-all" onClick={() => setQuery('')}>검색 초기화</button>}
           </div>}
         </div>
-      </section> : <div id="projects" className="welcome-state"><span aria-hidden="true">↖</span><div><strong>어떤 아이디어가 궁금하세요?</strong><p>위의 분야 카드를 선택해 조별 작품을 만나보세요.</p></div></div>}
+      </section> : <div id="projects" className="welcome-state"><span aria-hidden="true">↖</span><div><strong>어떤 아이디어가 궁금하세요?</strong><p>아래의 분야 카드를 선택해 조별 작품을 만나보세요.</p></div></div>}
+      <section className="category-section" aria-labelledby="category-heading">
+        <div className="category-heading">
+          <div><div className="eyebrow">EXPLORE BY FIELD</div><h2 id="category-heading">분야별 전시</h2></div>
+          <button className="show-all" aria-pressed={activeCategory === 'all'} aria-controls="projects" onClick={() => selectCategory('all')}>전부 보기 · {teams.length} ↗</button>
+        </div>
+        <div className="category-grid">
+          {categories.map((category, index) => <button
+            key={category.id}
+            className={`category-card${activeCategory === category.id ? ' selected' : ''}`}
+            aria-pressed={activeCategory === category.id}
+            aria-controls="projects"
+            onClick={() => selectCategory(category.id)}
+          >
+            <div className="category-art" style={{ background: category.color }} aria-hidden="true"><span>{category.symbol}</span><small>FIELD 0{index + 1}</small><span className="selected-mark">✓</span></div>
+            <div className="category-info"><strong>{category.name}</strong><span className="category-english">{category.english}</span><p>{category.description}</p><span className="category-count">{teams.filter(team => team.category === category.id).length}개 작품 <span aria-hidden="true">↗</span></span></div>
+          </button>)}
+        </div>
+        <p className="category-hint">분야 카드를 누르면 위쪽에 해당 작품이 표시됩니다. 현재 조별 분류는 예시입니다.</p>
+      </section>
       <footer>
         <span>
           우리의 전시회 · 함께 만든 아이디어를 공유하는 공간
