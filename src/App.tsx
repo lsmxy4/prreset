@@ -1,128 +1,42 @@
-import { useEffect, useRef, useState } from 'react';
-import type { CSSProperties } from 'react';
+import { useState } from 'react';
 import { teams } from './teams';
 import type { Team } from './teams';
 import { categories } from './categories';
 import type { CategoryId } from './categories';
-
-type Action = 'ppt' | 'link';
-type Selection = { team: Team; action: Action };
-
-function TeamCard({ team, index, onOpen }: { team: Team; index: number; onOpen: (team: Team, action: Action) => void }) {
-  const colors = { '--bg': team.bg, '--ink': team.ink } as CSSProperties;
-  return <article className="card" style={{ '--enter-delay': `${Math.min(index, 8) * 65}ms` } as CSSProperties}>
-    <div className="visual" style={colors}>
-      <span className="number">
-        {team.name} PROJECT
-      </span>
-      <div className="shape" aria-hidden="true">
-        {team.shape}
-      </div>
-    </div>
-    <div className="body">
-      <div className="category">
-        {categories.find(category => category.id === team.category)?.name}
-      </div>
-      <h3>
-        {team.title}
-      </h3>
-      <p className="desc">
-        {team.description}
-      </p>
-      <div className="buttons">
-        <button
-          className="ppt"
-          onClick={() => onOpen(team, 'ppt')}>▤ 설명 PPT 보기</button>
-        <button
-          className="link"
-          onClick={() => onOpen(team, 'link')}>↗ 관련 링크</button>
-      </div>
-    </div>
-  </article>;
-}
-
-function ProjectDialog({ selection, onClose }: { selection: Selection; onClose: () => void }) {
-  const dialog = useRef<HTMLDialogElement>(null);
-  const [page, setPage] = useState(0);
-  const { team, action } = selection;
-  const slides = [
-    { title: '프로젝트 소개', body: team.description },
-    { title: '아이디어와 제작 과정', body: '이 페이지에 작품의 목적, 주요 기능, 제작 과정을 넣어 주세요.' },
-    { title: '결과물과 기대 효과', body: '작품 사진과 완성된 결과, 기대 효과를 소개해 주세요.' },
-  ];
-  useEffect(() => {
-    const element = dialog.current;
-    element?.showModal();
-    return () => element?.close();
-  }, []);
-  return <dialog ref={dialog} aria-labelledby="modal-title" onCancel={onClose} onClick={event => {
-    if (event.target !== event.currentTarget)
-      return;
-    const bounds = event.currentTarget.getBoundingClientRect();
-    if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom)
-      onClose();
-  }}>
-    <div className="modal-top">
-      <h2 id="modal-title">
-        {team.name} · {team.title}
-      </h2>
-      <button className="close" aria-label="닫기" onClick={onClose}>✕</button>
-    </div>
-    {action === 'ppt' ? <>
-      <div className="slide" key={page}>
-        <div className="eyebrow">
-          {team.name} · 예시 설명 자료
-        </div>
-        <h3>
-          {slides[page].title}
-        </h3>
-        <p>
-          {slides[page].body}
-        </p>
-      </div>
-      <div className="pager">
-        <button
-          disabled={page === 0}
-          onClick={() => setPage(p => Math.max(0, p - 1))}>
-          ← 이전
-        </button>
-        <span aria-live="polite">
-          {page + 1} / {slides.length}
-        </span>
-        <button
-          disabled={page === slides.length - 1}
-          onClick={() => setPage(p => Math.min(slides.length - 1, p + 1))}>
-          다음 →
-        </button>
-      </div>
-      <p style={{ fontSize: 11 }}>
-        실제 PPT 연결 전 보여주는 예시입니다.
-      </p>
-    </> : <div className="placeholder">아직 관련 링크가 등록되지 않았어요.<br />나중에 이 조의 웹사이트, 영상 또는 결과물 링크를 연결할 수 있습니다.</div>}
-  </dialog>;
-}
+import { TeamCard, ProjectDialog } from './components/Projects';
+import type { Action, Selection } from './components/Projects';
 
 export default function App() {
   const [query, setQuery] = useState('');
   const [selection, setSelection] = useState<Selection | null>(null);
   const [activeCategory, setActiveCategory] = useState<CategoryId | 'all' | null>(null);
+  const [error, setError] = useState('');
+  const normalizedQuery = query.trim().normalize('NFKC').toLocaleLowerCase('ko');
   const filtered = teams.filter(team =>
     (activeCategory === 'all' || team.category === activeCategory) &&
-    (team.name + team.title + team.description).includes(query.trim())
+    (team.name + team.title + team.description).normalize('NFKC').toLocaleLowerCase('ko').includes(normalizedQuery)
   );
   const selectedCategory = categories.find(category => category.id === activeCategory);
+  function selectCategory(category: CategoryId | 'all' | null) {
+    setActiveCategory(category);
+    setQuery('');
+    setError('');
+  }
   function open(team: Team, action: Action) {
     const address = action === 'ppt' ? team.pptUrl : team.projectUrl;
     if (address) {
       try {
         const url = new URL(address, window.location.href);
-        if (url.protocol === 'http:' || url.protocol === 'https:') window.open(url.href, '_blank', 'noopener,noreferrer');
-      } catch { /* 잘못된 주소는 열지 않습니다. */ }
+        if (!['http:', 'https:'].includes(url.protocol)) throw new Error('Invalid protocol');
+        setError('');
+        window.open(url.href, '_blank', 'noopener,noreferrer');
+      } catch { setError(`${team.name}의 자료 주소를 열 수 없습니다. 등록된 주소를 확인해 주세요.`); }
       return;
     }
     setSelection({ team, action });
   }
   return <>
+    <a className="skip-link" href="#category-heading">전시 분야로 바로가기</a>
     <header>
       <div className="brand">
         <span>
@@ -131,7 +45,7 @@ export default function App() {
         우리의 전시회
       </div>
       <div className="tag">
-        TEAM PROJECT EXHIBITION · 기본 틀
+        TEAM PROJECT EXHIBITION <span className="header-badge">온라인 전시관</span>
       </div>
     </header>
     <main>
@@ -141,25 +55,23 @@ export default function App() {
             IDEAS COME TOGETHER
           </div>
           <h1>
-            우리의 작품, 한자리에.
+            우리의 작품,<br /><em>한자리에.</em>
           </h1>
           <p>
             각 조의 아이디어와 결과물을 만나보세요.<br />
             설명 자료부터 프로젝트 링크까지, 한눈에 살펴볼 수 있어요.
           </p>
+          <div className="hero-meta"><span><strong>{categories.length}</strong>개의 전시 분야</span><span><strong>{teams.length}</strong>개의 예시 프로젝트</span><span className="demo-badge">미리 보는 전시회</span></div>
         </div>
         <div className="note">
-          👋 전시회 관람 안내
-          <br />
-          먼저 관심 있는 분야를 선택하고
-          <br />
-          작품의 설명 자료와 링크를 확인하세요.
+          <span className="note-label">HOW TO EXPLORE</span><strong>작품을 만나는 세 단계</strong>
+          <ol><li><span>01</span>관심 있는 전시 분야 선택</li><li><span>02</span>조별 아이디어와 작품 살펴보기</li><li><span>03</span>PPT 자료와 관련 링크 열기</li></ol>
         </div>
       </section>
       <section className="category-section" aria-labelledby="category-heading">
         <div className="category-heading">
           <div><div className="eyebrow">EXPLORE BY FIELD</div><h2 id="category-heading">분야별 전시</h2></div>
-          <button className="show-all" aria-pressed={activeCategory === 'all'} aria-controls="projects" onClick={() => setActiveCategory('all')}>전부 보기 · {teams.length}</button>
+          <button className="show-all" aria-pressed={activeCategory === 'all'} aria-controls="projects" onClick={() => selectCategory('all')}>전부 보기 · {teams.length} ↗</button>
         </div>
         <div className="category-grid">
           {categories.map((category, index) => <button
@@ -167,15 +79,16 @@ export default function App() {
             className={`category-card${activeCategory === category.id ? ' selected' : ''}`}
             aria-pressed={activeCategory === category.id}
             aria-controls="projects"
-            onClick={() => setActiveCategory(category.id)}
+            onClick={() => selectCategory(category.id)}
           >
-            <div className="category-art" style={{ background: category.color }} aria-hidden="true"><span>{category.symbol}</span><small>0{index + 1}</small></div>
+            <div className="category-art" style={{ background: category.color }} aria-hidden="true"><span>{category.symbol}</span><small>FIELD 0{index + 1}</small><span className="selected-mark">✓</span></div>
             <div className="category-info"><strong>{category.name}</strong><span className="category-english">{category.english}</span><p>{category.description}</p><span className="category-count">{teams.filter(team => team.category === category.id).length}개 작품 <span aria-hidden="true">↗</span></span></div>
           </button>)}
         </div>
         <p className="category-hint">분야 카드를 누르면 아래에 해당 작품이 표시됩니다. 현재 조별 분류는 예시입니다.</p>
       </section>
       {activeCategory !== null ? <section id="projects" aria-labelledby="projects-heading">
+        <div className="collection-top"><button className="text-button" onClick={() => selectCategory(null)}>← 분야 선택으로</button><span>EXHIBITION COLLECTION</span></div>
         <div className="toolbar">
           <h2 id="projects-heading" aria-live="polite">
             {selectedCategory?.name ?? '전부 보기'}
@@ -183,19 +96,21 @@ export default function App() {
               {filtered.length}개 작품
             </span>
           </h2>
-          <input
+          <div className="search-field"><span aria-hidden="true">⌕</span><input
             type="search"
             value={query}
             onChange={event => setQuery(event.target.value)}
-            placeholder="조 이름 또는 작품 검색" aria-label="조 이름 또는 작품 검색" />
+            placeholder="조 이름 또는 작품 검색" aria-label="조 이름 또는 작품 검색" />{query && <button className="clear-search" aria-label="검색어 지우기" onClick={() => setQuery('')}>✕</button>}</div>
         </div>
+        <p className="collection-description">{selectedCategory?.description ?? '다섯 가지 분야의 조별 아이디어를 한곳에서 만나보세요.'}</p>
+        {error && <p className="resource-error" role="alert">{error}</p>}
         <div className="grid" key={activeCategory}>
           {filtered.map((team, index) => <TeamCard key={team.name} team={team} index={index} onOpen={open} />)}
           {filtered.length === 0 && <div className="empty">
-            {query.trim() ? '이 분야에 검색 조건과 일치하는 작품이 없습니다.' : '이 분야에 등록된 작품이 없습니다.'}
+            <span className="empty-icon" aria-hidden="true">⌕</span><strong>{query.trim() ? '검색 결과가 없어요.' : '아직 등록된 작품이 없어요.'}</strong><p>다른 조 이름이나 작품 이름으로 검색해 보세요.</p>{query && <button className="show-all" onClick={() => setQuery('')}>검색 초기화</button>}
           </div>}
         </div>
-      </section> : <div id="projects" className="empty">위에서 분야를 선택하거나 ‘전부 보기’를 눌러 주세요.</div>}
+      </section> : <div id="projects" className="welcome-state"><span aria-hidden="true">↖</span><div><strong>어떤 아이디어가 궁금하세요?</strong><p>위의 분야 카드를 선택해 조별 작품을 만나보세요.</p></div></div>}
       <footer>
         <span>
           우리의 전시회 · 함께 만든 아이디어를 공유하는 공간
