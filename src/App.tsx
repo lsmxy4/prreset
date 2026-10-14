@@ -42,7 +42,7 @@ export default function App() {
         <span>
           ▦
         </span>
-        우리의 전시회
+        경복대학교 소프트웨어융합과 캡스톤 디자인 전시회
       </div>
       <div className="tag">
         TEAM PROJECT EXHIBITION <span className="header-badge">온라인 전시관</span>
