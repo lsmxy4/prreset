@@ -3,7 +3,7 @@ import type { CSSProperties } from 'react';
 import type { Team } from '../teams';
 import { categories } from '../categories';
 export type Action = 'ppt' | 'link';
-export type Selection = { team: Team; action: Action };
+export type Selection = { team: Team; action: Action; resourceUrl?: string };
 export function TeamCard({ team, index, onOpen }: { team: Team; index: number; onOpen: (team: Team, action: Action) => void }) {
   const colors = { '--bg': team.bg, '--ink': team.ink } as CSSProperties;
   return <article className="card" style={{ '--enter-delay': `${Math.min(index, 8) * 65}ms` } as CSSProperties}>
@@ -41,7 +41,7 @@ export function TeamCard({ team, index, onOpen }: { team: Team; index: number; o
 export function ProjectDialog({ selection, onClose }: { selection: Selection; onClose: () => void }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const [page, setPage] = useState(0);
-  const { team, action } = selection;
+  const { team, action, resourceUrl } = selection;
   const slides = [
     { title: '프로젝트 소개', body: team.description },
     { title: '아이디어와 제작 과정', body: '이 페이지에 작품의 목적, 주요 기능, 제작 과정을 넣어 주세요.' },
@@ -54,8 +54,8 @@ export function ProjectDialog({ selection, onClose }: { selection: Selection; on
     element?.showModal();
     return () => { element?.close(); document.body.style.overflow = previous; };
   }, []);
-  return <dialog ref={dialog} aria-labelledby="modal-title" onKeyDown={event => {
-    if (action !== 'ppt') return;
+  return <dialog ref={dialog} className={resourceUrl ? 'resource-viewer' : undefined} aria-labelledby="modal-title" onKeyDown={event => {
+    if (action !== 'ppt' || resourceUrl) return;
     if (event.key === 'ArrowRight') { event.preventDefault(); setPage(p => Math.min(slides.length - 1, p + 1)); }
     if (event.key === 'ArrowLeft') { event.preventDefault(); setPage(p => Math.max(0, p - 1)); }
   }} onCancel={onClose} onClick={event => {
@@ -72,9 +72,13 @@ export function ProjectDialog({ selection, onClose }: { selection: Selection; on
         {team.name} · {team.title}
       </h2>
       </div>
-      <button className="close" aria-label="닫기" onClick={onClose}>✕</button>
+      <button className="close" aria-label={resourceUrl ? '전시장으로 돌아가기' : '닫기'} onClick={onClose}>{resourceUrl ? '← 전시장으로 돌아가기' : '✕'}</button>
     </div>
-    {action === 'ppt' ? <>
+    {resourceUrl ? <div className="pdf-content">
+      <p className="pdf-help">자료를 본 뒤 위의 ‘전시장으로 돌아가기’를 누르면 선택했던 작품 목록으로 돌아갑니다.</p>
+      <iframe className="pdf-frame" src={resourceUrl} title={`${team.name} ${team.title} 발표 PDF`} />
+      <p className="pdf-fallback">PDF가 표시되지 않으면 <a href={resourceUrl} target="_blank" rel="noopener noreferrer">새 탭에서 열기</a> 또는 <a href={resourceUrl} download>파일 다운로드</a>를 이용하세요.</p>
+    </div> : action === 'ppt' ? <>
       <div className="slide" key={page}>
         <span className="slide-number" aria-hidden="true">0{page + 1}</span>
         <div className="eyebrow">

@@ -38,6 +38,10 @@ export default function App() {
         const url = new URL(address, window.location.href);
         if (!['http:', 'https:'].includes(url.protocol)) throw new Error('Invalid protocol');
         setError('');
+        if (action === 'ppt' && url.pathname.toLowerCase().endsWith('.pdf')) {
+          setSelection({ team, action, resourceUrl: url.href });
+          return;
+        }
         window.open(url.href, '_blank', 'noopener,noreferrer');
       } catch { setError(`${team.name}의 자료 주소를 열 수 없습니다. 등록된 주소를 확인해 주세요.`); }
       return;
