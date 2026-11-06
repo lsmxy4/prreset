@@ -67,10 +67,10 @@ export function ProjectDialog({ selection, onClose }: { selection: Selection; on
   }}>
     <div className="modal-top">
       <div>
-      <div className="eyebrow">{action === 'ppt' ? 'PROJECT PRESENTATION' : 'PROJECT LINK'}</div>
-      <h2 id="modal-title">
-        {team.name} · {team.title}
-      </h2>
+        <div className="eyebrow">{action === 'ppt' ? 'PROJECT PRESENTATION' : 'PROJECT LINK'}</div>
+        <h2 id="modal-title">
+          {team.name} · {team.title}
+        </h2>
       </div>
       <button className="close" aria-label={resourceUrl ? '전시장으로 돌아가기' : '닫기'} onClick={onClose}>{resourceUrl ? '← 전시장으로 돌아가기' : '✕'}</button>
     </div>

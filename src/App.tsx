@@ -68,7 +68,7 @@ export default function App() {
             IDEAS COME TOGETHER
           </div>
           <h1>
-            소프트웨어융합과 <br/>캡스톤 디자인 전시회
+            소프트웨어융합과 <br />캡스톤 디자인 전시회
           </h1>
           <p>
             각 조의 아이디어와 결과물을 만나보세요.<br />
