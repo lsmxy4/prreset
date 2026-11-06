@@ -22,8 +22,8 @@ export const teams: Team[] = [
         bg: '#e6eddb',
         ink: '#658754',
         shape: '▥',
-        pptUrl: '',
-        projectUrl: ''
+        pptUrl: 'presentations/team1-test.pdf',
+        projectUrl: 'https://www.naver.com'
     },
     {
         name: '2조',
