@@ -1,13 +1,5 @@
 export const categories = [
   {
-    id: 'industry',
-    name: '산업체 수요 맞춤형',
-    english: 'Industry-Linked',
-    symbol: '▥',
-    description: '실제 기업이나 산업 현장에서 활용할 수 있는 시스템과 아이디어',
-    color: '#e6eddb'
-  },
-  {
     id: 'social',
     name: '사회 문제 해결형',
     english: 'Social Problem Solving',

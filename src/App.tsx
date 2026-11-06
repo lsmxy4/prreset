@@ -74,7 +74,7 @@ export default function App() {
             각 조의 아이디어와 결과물을 만나보세요.<br />
             설명 자료부터 프로젝트 링크까지, 한눈에 살펴볼 수 있어요.
           </p>
-          <div className="hero-meta"><span><strong>{categories.length}</strong>개의 전시 분야</span><span><strong>{teams.length}</strong>개의 예시 프로젝트</span><span className="demo-badge">미리 보는 전시회</span></div>
+          <div className="hero-meta"><span><strong>{categories.length}</strong>개의 전시 분야</span><span><strong>{teams.length}</strong>개의 프로젝트</span><span className="demo-badge">캡스톤 디자인</span></div>
         </div>
         <div className="note">
           <span className="note-label">HOW TO EXPLORE</span><strong>작품을 만나는 세 단계</strong>
@@ -96,7 +96,7 @@ export default function App() {
             onChange={event => setQuery(event.target.value)}
             placeholder="조 이름 또는 작품 검색" aria-label="조 이름 또는 작품 검색" />{query && <button className="clear-search" aria-label="검색어 지우기" onClick={() => setQuery('')}>✕</button>}</div>
         </div>
-        <p className="collection-description">{selectedCategory?.description ?? '다섯 가지 분야의 조별 아이디어를 한곳에서 만나보세요.'}</p>
+        <p className="collection-description">{selectedCategory?.description ?? `${categories.length}개 분야의 조별 아이디어를 한곳에서 만나보세요.`}</p>
         {error && <p className="resource-error" role="alert">{error}</p>}
         <div className="grid" key={activeCategory}>
           {filtered.map((team, index) => <TeamCard key={team.name} team={team} index={index} onOpen={open} />)}
@@ -122,14 +122,14 @@ export default function App() {
             <div className="category-info"><strong>{category.name}</strong><span className="category-english">{category.english}</span><p>{category.description}</p><span className="category-count">{teams.filter(team => team.category === category.id).length}개 작품 <span aria-hidden="true">↗</span></span></div>
           </button>)}
         </div>
-        <p className="category-hint">분야 카드를 누르면 위쪽에 해당 작품이 표시됩니다. 현재 조별 분류는 예시입니다.</p>
+        <p className="category-hint">분야 카드를 누르면 위쪽에 해당 작품이 표시됩니다. 발표 자료의 주목적을 기준으로 분류했습니다.</p>
       </section>
       <footer>
         <span>
           우리의 전시회 · 함께 만든 아이디어를 공유하는 공간
         </span>
         <span>
-          현재 작품과 자료는 예시입니다.
+          각 조가 제공한 발표 자료를 확인할 수 있습니다.
         </span>
       </footer>
     </main>
